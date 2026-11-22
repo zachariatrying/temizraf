@@ -335,3 +335,41 @@ export function downloadScoreCardPng(product: ProductRecord, breakdown: ScoreBre
   link.href = canvas.toDataURL('image/png');
   link.click();
 }
+
+export interface OpenPriceResult {
+  price: number;
+  currency: string;
+  location?: string;
+  date?: string;
+}
+
+export async function fetchOpenPriceTry(barcode: string): Promise<OpenPriceResult | null> {
+  const clean = barcode.trim();
+  if (!/^\d{8,14}$/.test(clean)) return null;
+  try {
+    const res = await fetch(
+      `https://prices.openfoodfacts.org/api/v1/prices?product_code=${encodeURIComponent(clean)}&size=5`
+    );
+    if (!res.ok) return null;
+    const json = (await res.json()) as {
+      items?: Array<{
+        price?: number;
+        currency?: string;
+        date?: string;
+        location?: { osm_name?: string; osm_address_city?: string };
+      }>;
+    };
+    const items = json.items ?? [];
+    if (items.length === 0) return null;
+    const best = items.find((i) => i.currency === 'TRY') ?? items[0];
+    if (typeof best.price !== 'number') return null;
+    return {
+      price: best.price,
+      currency: best.currency || 'TRY',
+      location: best.location?.osm_name || best.location?.osm_address_city,
+      date: best.date,
+    };
+  } catch {
+    return null;
+  }
+}

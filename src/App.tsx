@@ -19,9 +19,11 @@ import { TURKISH_PRODUCTS } from './data/turkishProducts';
 import {
   analyzeProduct,
   downloadScoreCardPng,
+  fetchOpenPriceTry,
   findCleanAlternatives,
   lookupBarcodeLive,
   searchProductsLive,
+  type OpenPriceResult,
 } from './utils/analyzer';
 import { BarcodeScannerModal } from './components/BarcodeScannerModal';
 
@@ -53,6 +55,7 @@ export default function App() {
     'Şeker, palm yağı, buğday unu, glikoz-fruktoz şurubu, aroma artırıcı (E621), emülgatör (E471), yapay aroma verici.'
   );
   const [catalogDomainFilter, setCatalogDomainFilter] = useState<'Tümü' | ProductDomain>('Tümü');
+  const [livePrice, setLivePrice] = useState<OpenPriceResult | null>(null);
   const [history, setHistory] = useState<ProductRecord[]>(() => {
     try {
       const raw = localStorage.getItem(HISTORY_KEY);
@@ -97,6 +100,17 @@ export default function App() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    let alive = true;
+    setLivePrice(null);
+    void fetchOpenPriceTry(selectedProduct.barcode).then((res) => {
+      if (alive) setLivePrice(res);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [selectedProduct.barcode]);
 
   const breakdown = useMemo(
     () => analyzeProduct(selectedProduct, activeFilters),
@@ -430,6 +444,13 @@ export default function App() {
                     {selectedProduct.brand} · {selectedProduct.marketHint} · Barkod:{' '}
                     <span className="tabular-nums font-mono">{selectedProduct.barcode}</span>
                   </p>
+                  {livePrice && (
+                    <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-md bg-[#E7F5ED] border border-[#BBF7D0] px-2 py-0.5 text-[11px] font-bold text-[#0E5A36]">
+                      Güncel Topluluk Fiyatı: {livePrice.price.toFixed(2)} {livePrice.currency}
+                      {livePrice.location ? ` · ${livePrice.location}` : ''}
+                      {livePrice.date ? ` (${livePrice.date})` : ''}
+                    </div>
+                  )}
                 </div>
 
                 {/* Big 0-100 Score Pill */}
@@ -738,8 +759,8 @@ export default function App() {
         </div>
       </main>
 
-      <footer className="border-t border-[#E2E8E5] bg-white py-3.5 text-center text-xs text-[#52635A] px-4">
-        TemizRaf tamamen reklamsız bilgilendirme amaçlı etiket analizi sunar; tıbbi teşhis veya diyetisyen tavsiyesi değildir.
+      <footer className="border-t border-[#E2E8E5] bg-white py-3.5 text-center text-[11px] text-[#52635A] px-4 leading-relaxed">
+        TemizRaf yalnızca bilgilendirme amaçlı etiket analizi sunar; tıbbi teşhis veya diyetisyen tavsiyesi değildir. Bulgular EFSA, IARC ve SCCS değerlendirmelerine, canlı ürün ve fiyat verileri açık kaynaklı Open Food Facts / Open Beauty Facts / Open Prices (ODbL) topluluk veritabanına dayanır. Üretici formülleri değişebileceğinden daima ürün üzerindeki güncel etiketi kontrol ediniz.
       </footer>
 
       <BarcodeScannerModal
