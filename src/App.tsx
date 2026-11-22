@@ -70,6 +70,34 @@ export default function App() {
     }
   }, [history]);
 
+  useEffect(() => {
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      const utm_source = sp.get('utm_source');
+      const utm_campaign = sp.get('utm_campaign');
+      const utm_medium = sp.get('utm_medium');
+      if (utm_source || utm_campaign || utm_medium) {
+        localStorage.setItem(
+          'temizraf_utm_attribution_v1',
+          JSON.stringify({
+            utm_source,
+            utm_campaign,
+            utm_medium,
+            landedAt: new Date().toISOString(),
+          })
+        );
+      }
+      const deepQuery = sp.get('barkod') || sp.get('q');
+      if (deepQuery && deepQuery.trim()) {
+        setSearchQuery(deepQuery.trim());
+        void handleBarcodeSearch(deepQuery.trim());
+      }
+    } catch {
+      // Ignore URL/storage errors
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const breakdown = useMemo(
     () => analyzeProduct(selectedProduct, activeFilters),
     [selectedProduct, activeFilters]
@@ -192,7 +220,7 @@ export default function App() {
       <header className="sticky top-0 z-30 border-b border-[#0A462A] bg-[#0E5A36] text-white">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 h-15 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <img src="/favicon.svg" alt="" className="w-7 h-7 rounded-lg" />
+            <img src={`${import.meta.env.BASE_URL}store-assets/temizraf_icon.png`} alt="TemizRaf" className="w-7 h-7 rounded-lg object-cover" />
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-lg font-extrabold tracking-tight">TemizRaf</h1>

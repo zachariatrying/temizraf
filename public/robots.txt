@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://zachariatrying.github.io/temizraf/sitemap.xml
