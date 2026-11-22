@@ -1,0 +1,17 @@
+{
+  "name": "TemizRaf — Türkçe Gıda & Kozmetik Analizörü",
+  "short_name": "TemizRaf",
+  "description": "Reklamsız Türkçe gıda ve kozmetik barkod, katkı maddesi (E-kodu) ve içindekiler analizörü.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F5F7F6",
+  "theme_color": "#0E5A36",
+  "lang": "tr",
+  "icons": [
+    {
+      "src": "/store-assets/temizraf_icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
+    }
+  ]
+}

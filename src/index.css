@@ -1,0 +1,38 @@
+/* TemizRaf v2.0 — Design System Tokens
+ * Mode: Operate | Palette: Clinical Lab / Botanical Trust (#0E5A36 / #FFFFFF / #F5F7F6 / #E2E8E5)
+ */
+@import "tailwindcss";
+
+:root {
+  --bg-paper: #f5f7f6;
+  --bg-card: #ffffff;
+  --border-linen: #e2e8e5;
+  --ink-forest: #0f1f17;
+  --ink-muted: #52635a;
+  --score-excellent: #0e5a36;
+  --score-good: #4d8a17;
+  --score-mid: #d97706;
+  --score-avoid: #c83e37;
+  --font-display: "Manrope", system-ui, sans-serif;
+  --font-sans: "Manrope", system-ui, sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-paper);
+  color: var(--ink-forest);
+}
+
+.font-serif-editorial {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2.5px solid var(--score-excellent);
+  outline-offset: 2px;
+}
