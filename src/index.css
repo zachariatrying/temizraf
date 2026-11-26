@@ -1,38 +1,48 @@
-/* TemizRaf v2.0 — Design System Tokens
- * Mode: Operate | Palette: Clinical Lab / Botanical Trust (#0E5A36 / #FFFFFF / #F5F7F6 / #E2E8E5)
- */
 @import "tailwindcss";
 
 :root {
-  --bg-paper: #f5f7f6;
-  --bg-card: #ffffff;
-  --border-linen: #e2e8e5;
-  --ink-forest: #0f1f17;
-  --ink-muted: #52635a;
+  --bg-cotton: #f6f4ec;
+  --bg-label: #fffefa;
+  --ink-botanical: #112a1e;
+  --ink-muted: #4b6155;
   --score-excellent: #0e5a36;
-  --score-good: #4d8a17;
-  --score-mid: #d97706;
-  --score-avoid: #c83e37;
-  --font-display: "Manrope", system-ui, sans-serif;
-  --font-sans: "Manrope", system-ui, sans-serif;
+  --font-serif: "Instrument Serif", Georgia, serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
 body {
   font-family: var(--font-sans);
-  background-color: var(--bg-paper);
-  color: var(--ink-forest);
+  background-color: var(--bg-cotton);
+  color: var(--ink-botanical);
 }
 
 .font-serif-editorial {
-  font-family: var(--font-display);
-  letter-spacing: -0.02em;
+  font-family: var(--font-serif);
+  text-wrap: balance;
+}
+
+.font-label-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
 
+::selection {
+  background: rgba(17, 42, 30, 0.16);
+  color: #112a1e;
+}
+
 :focus-visible {
   outline: 2.5px solid var(--score-excellent);
   outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+  }
 }
