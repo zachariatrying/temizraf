@@ -21,3 +21,8 @@ Uygulama URL'deki `?barkod=` veya `?q=` parametresini okuyup doğrudan o ürün�
 1. **Market Rafı Kancası:** *"Markette 'şekersiz' veya 'doğal' yazan her ürüne inanma — barkodu okut, içindeki gizli E-kodunu gör."*
 2. **Yan Yana Kıyas Kancası:** *"Aynı fiyattaki iki çikolatanın içindekiler listesini yan yana koyduk: aradaki fark şaşırtıcı."*
 3. **Kozmetik Kancası:** *"Şampuanındaki paraben ve sülfatları tek dokunuşla temiz içerikli muadilleriyle değiştir."*
+
+## 4. Google AdSense & Gelir Kurulumu
+- **Hazır Alanlar:** Sonuç ekranında "Daha Temiz Alternatif Önerileri" bölümünün altında Google AdSense uyumlu (`REKLAM · SPONSORLU ÖNERİ ALANI` etiketli) `AdSenseBanner` bileşeni ve `public/ads.txt` yer alır.
+- **Canlıya Alma:** AdSense hesabın onaylandığında `public/ads.txt` içindeki yayıncı kimliğini (`ca-pub-...`) güncelle ve derleme ortamına `VITE_ADSENSE_CLIENT=ca-pub-...` değişkenini ekle.
+- **Ek Gelir:** Temiz alternatif önerilerinin yanına Hepsiburada / Trendyol / Migros Sanal Market affiliate linkleri eklenerek TBM + satış komisyonu hibrit modeli kurulabilir.

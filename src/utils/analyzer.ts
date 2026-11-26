@@ -126,12 +126,28 @@ export function findCleanAlternatives(
   product: ProductRecord,
   activeFilters: DietFilter[]
 ): Array<{ product: ProductRecord; breakdown: ScoreBreakdown }> {
-  return TURKISH_PRODUCTS.filter(
+  const sameCategory = TURKISH_PRODUCTS.filter(
     (p) => p.barcode !== product.barcode && p.category === product.category
   )
     .map((p) => ({ product: p, breakdown: analyzeProduct(p, activeFilters) }))
     .filter((entry) => entry.breakdown.score >= 75)
     .sort((a, b) => b.breakdown.score - a.breakdown.score);
+
+  if (sameCategory.length >= 3) {
+    return sameCategory.slice(0, 3);
+  }
+
+  const seen = new Set(sameCategory.map((e) => e.product.barcode));
+  seen.add(product.barcode);
+
+  const sameDomainFallback = TURKISH_PRODUCTS.filter(
+    (p) => !seen.has(p.barcode) && p.domain === product.domain
+  )
+    .map((p) => ({ product: p, breakdown: analyzeProduct(p, activeFilters) }))
+    .filter((entry) => entry.breakdown.score >= 82)
+    .sort((a, b) => b.breakdown.score - a.breakdown.score);
+
+  return [...sameCategory, ...sameDomainFallback].slice(0, 3);
 }
 
 /**
