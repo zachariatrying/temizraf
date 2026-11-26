@@ -10,6 +10,8 @@ import {
   History,
   CheckCircle2,
   ArrowLeftRight,
+  Plus,
+  Store,
   X,
 } from 'lucide-react';
 import type { DietFilter, ProductDomain, ProductRecord } from './types';
@@ -26,6 +28,21 @@ import {
 import { BarcodeScannerModal } from './components/BarcodeScannerModal';
 
 const HISTORY_KEY = 'temizraf_history_v1';
+const CUSTOM_PRODUCTS_KEY = 'temizraf_custom_products_v1';
+const CUSTOM_MARKETS_KEY = 'temizraf_custom_markets_v1';
+
+const BASE_MARKETS = [
+  'BİM',
+  'A101',
+  'ŞOK',
+  'Migros',
+  'CarrefourSA',
+  'File',
+  'Tarım Kredi',
+  'Gratis',
+  'Watsons',
+  'Rossmann',
+];
 
 const DIET_OPTIONS: Array<{ id: DietFilter; label: string }> = [
   { id: 'glutensiz', label: 'Glütensiz' },
@@ -35,6 +52,30 @@ const DIET_OPTIONS: Array<{ id: DietFilter; label: string }> = [
 ];
 
 export default function App() {
+  const [customMarkets, setCustomMarkets] = useState<string[]>(() => {
+    try {
+      const raw = localStorage.getItem(CUSTOM_MARKETS_KEY);
+      return raw ? (JSON.parse(raw) as string[]) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [customProducts, setCustomProducts] = useState<ProductRecord[]>(() => {
+    try {
+      const raw = localStorage.getItem(CUSTOM_PRODUCTS_KEY);
+      return raw ? (JSON.parse(raw) as ProductRecord[]) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const allProducts = useMemo(() => [...customProducts, ...TURKISH_PRODUCTS], [customProducts]);
+  const allMarkets = useMemo(() => [...BASE_MARKETS, ...customMarkets], [customMarkets]);
+  const allBrands = useMemo(
+    () => [...new Set(allProducts.map((p) => p.brand))].sort((a, b) => a.localeCompare(b, 'tr-TR')),
+    [allProducts]
+  );
+
   const [selectedProduct, setSelectedProduct] = useState<ProductRecord>(TURKISH_PRODUCTS[0]);
   const [compareProduct, setCompareProduct] = useState<ProductRecord | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -44,15 +85,30 @@ export default function App() {
   const [liveError, setLiveError] = useState<string | null>(null);
   const [scannerOpen, setScannerOpen] = useState(false);
   const [kvkkOpen, setKvkkOpen] = useState(false);
+  const [addModalOpen, setAddModalOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [activeFilters, setActiveFilters] = useState<DietFilter[]>(['palmiyesiz']);
   const [mode, setMode] = useState<'raf' | 'etiket'>('raf');
+
   const [customName, setCustomName] = useState('');
   const [customDomain, setCustomDomain] = useState<ProductDomain>('Gıda');
   const [customLabel, setCustomLabel] = useState(
     'Şeker, palm yağı, buğday unu, glikoz-fruktoz şurubu, aroma artırıcı (E621), emülgatör (E471), yapay aroma verici.'
   );
+
   const [catalogDomainFilter, setCatalogDomainFilter] = useState<'Tümü' | ProductDomain>('Tümü');
+  const [selectedMarket, setSelectedMarket] = useState<string>('Tümü');
+  const [selectedBrand, setSelectedBrand] = useState<string>('Tümü');
+
+  // Add Market / Product Modal State
+  const [newMarketName, setNewMarketName] = useState('');
+  const [newProdName, setNewProdName] = useState('');
+  const [newProdBrand, setNewProdBrand] = useState('');
+  const [newProdMarket, setNewProdMarket] = useState('Migros');
+  const [newProdBarcode, setNewProdBarcode] = useState('');
+  const [newProdDomain, setNewProdDomain] = useState<ProductDomain>('Gıda');
+  const [newProdIngredients, setNewProdIngredients] = useState('');
+
   const [livePrice, setLivePrice] = useState<OpenPriceResult | null>(null);
   const [history, setHistory] = useState<ProductRecord[]>(() => {
     try {
@@ -71,24 +127,15 @@ export default function App() {
 
   useEffect(() => {
     try {
-      const sp = new URLSearchParams(window.location.search);
-      const utm_source = sp.get('utm_source');
-      const utm_campaign = sp.get('utm_campaign');
-      const utm_medium = sp.get('utm_medium');
-      if (utm_source || utm_campaign || utm_medium) {
-        localStorage.setItem(
-          'temizraf_utm_attribution_v1',
-          JSON.stringify({ utm_source, utm_campaign, utm_medium, landedAt: new Date().toISOString() })
-        );
-      }
-      const deepQuery = sp.get('barkod') || sp.get('q');
-      if (deepQuery && deepQuery.trim()) {
-        setSearchQuery(deepQuery.trim());
-        void handleBarcodeSearch(deepQuery.trim());
-      }
+      localStorage.setItem(CUSTOM_MARKETS_KEY, JSON.stringify(customMarkets));
     } catch {}
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [customMarkets]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(CUSTOM_PRODUCTS_KEY, JSON.stringify(customProducts));
+    } catch {}
+  }, [customProducts]);
 
   useEffect(() => {
     let alive = true;
@@ -104,10 +151,17 @@ export default function App() {
   const breakdown = useMemo(() => analyzeProduct(selectedProduct, activeFilters), [selectedProduct, activeFilters]);
   const compareBreakdown = useMemo(() => (compareProduct ? analyzeProduct(compareProduct, activeFilters) : null), [compareProduct, activeFilters]);
   const alternatives = useMemo(() => findCleanAlternatives(selectedProduct, activeFilters), [selectedProduct, activeFilters]);
+
   const filteredCatalog = useMemo(() => {
-    if (catalogDomainFilter === 'Tümü') return TURKISH_PRODUCTS;
-    return TURKISH_PRODUCTS.filter((p) => p.domain === catalogDomainFilter);
-  }, [catalogDomainFilter]);
+    return allProducts.filter((p) => {
+      if (catalogDomainFilter !== 'Tümü' && p.domain !== catalogDomainFilter) return false;
+      if (selectedMarket !== 'Tümü' && !p.marketHint.toLocaleLowerCase('tr-TR').includes(selectedMarket.toLocaleLowerCase('tr-TR'))) {
+        return false;
+      }
+      if (selectedBrand !== 'Tümü' && p.brand !== selectedBrand) return false;
+      return true;
+    });
+  }, [allProducts, catalogDomainFilter, selectedMarket, selectedBrand]);
 
   const pushHistory = (prod: ProductRecord) => {
     setSelectedProduct(prod);
@@ -122,7 +176,7 @@ export default function App() {
 
     const isNumericBarcode = /^\d{8,14}$/.test(query);
     if (isNumericBarcode) {
-      const localMatch = TURKISH_PRODUCTS.find((p) => p.barcode === query);
+      const localMatch = allProducts.find((p) => p.barcode === query);
       if (localMatch) {
         pushHistory(localMatch);
         return;
@@ -139,7 +193,7 @@ export default function App() {
     }
 
     const qLower = query.toLowerCase();
-    const localHits = TURKISH_PRODUCTS.filter(
+    const localHits = allProducts.filter(
       (p) => p.name.toLowerCase().includes(qLower) || p.brand.toLowerCase().includes(qLower)
     );
     if (localHits.length > 0) pushHistory(localHits[0]);
@@ -180,21 +234,60 @@ export default function App() {
     });
   };
 
+  const handleAddCustomMarket = (e: FormEvent) => {
+    e.preventDefault();
+    const trimmed = newMarketName.trim();
+    if (!trimmed) return;
+    if (!allMarkets.some((m) => m.toLowerCase() === trimmed.toLowerCase())) {
+      setCustomMarkets((prev) => [...prev, trimmed]);
+    }
+    setNewProdMarket(trimmed);
+    setSelectedMarket(trimmed);
+    setNewMarketName('');
+  };
+
+  const handleAddCustomProduct = (e: FormEvent) => {
+    e.preventDefault();
+    if (!newProdName.trim() || !newProdIngredients.trim()) return;
+    const record: ProductRecord = {
+      barcode: newProdBarcode.trim() || `869${Date.now().toString().slice(-10)}`,
+      name: newProdName.trim(),
+      brand: newProdBrand.trim() || 'Yerel Marka',
+      marketHint: newProdMarket,
+      domain: newProdDomain,
+      category: newProdDomain === 'Gıda' ? 'Kullanıcı Gıda' : 'Kullanıcı Kozmetik',
+      ingredientsText: newProdIngredients.trim(),
+      allergens: [],
+      source: 'Türkiye Raf Kataloğu',
+    };
+    setCustomProducts((prev) => [record, ...prev]);
+    pushHistory(record);
+    setNewProdName('');
+    setNewProdBrand('');
+    setNewProdBarcode('');
+    setNewProdIngredients('');
+    setAddModalOpen(false);
+  };
+
   const toggleFilter = (id: DietFilter) => setActiveFilters((prev) => (prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]));
 
   const handleExportHistoryJson = () => {
-    const blob = new Blob([JSON.stringify(history, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify({ history, customMarkets, customProducts }, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `temizraf-tarama-gecmisi-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `temizraf-yedek-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
   const handlePurgeHistory = () => {
     localStorage.removeItem(HISTORY_KEY);
+    localStorage.removeItem(CUSTOM_MARKETS_KEY);
+    localStorage.removeItem(CUSTOM_PRODUCTS_KEY);
     setHistory([TURKISH_PRODUCTS[0]]);
+    setCustomMarkets([]);
+    setCustomProducts([]);
     setSelectedProduct(TURKISH_PRODUCTS[0]);
     setCompareProduct(null);
     setConfirmDelete(false);
@@ -203,7 +296,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F6F4EC] text-[#112A1E]">
-      {/* Apothecary Cotton Paper Masthead */}
       <header className="mx-auto max-w-6xl w-full px-4 sm:px-6 pt-5 pb-4 border-b border-[#112A1E]/20 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <img
@@ -214,19 +306,27 @@ export default function App() {
           <div>
             <h1 className="font-serif-editorial text-2xl sm:text-3xl leading-none">TemizRaf</h1>
             <p className="font-label-mono text-[11px] text-[#4B6155] mt-1">
-              {TURKISH_PRODUCTS.length}+ TR Raf &amp; Canlı Open Facts Laboratuvarı
+              {allProducts.length} TR Raf Ürünü · Çift Motorlu Kamera Barkod Okuyucu
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setAddModalOpen(true)}
+            className="inline-flex items-center gap-1.5 border border-[#112A1E]/30 bg-[#FFFEFA] px-3 py-2 text-xs font-bold hover:border-[#112A1E] cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5 text-[#0E5A36]" />
+            Market / Ürün Ekle
+          </button>
           <button
             type="button"
             onClick={() => setKvkkOpen(true)}
             className="inline-flex items-center gap-1.5 border border-[#112A1E]/30 bg-[#FFFEFA] px-3 py-2 text-xs font-semibold hover:border-[#112A1E] cursor-pointer"
           >
             <ShieldCheck className="w-3.5 h-3.5 text-[#0E5A36]" />
-            <span className="hidden sm:inline">KVKK &amp; Yedek</span>
+            <span className="hidden sm:inline">KVKK</span>
           </button>
           <button
             type="button"
@@ -240,7 +340,6 @@ export default function App() {
       </header>
 
       <main className="flex-1 mx-auto w-full max-w-6xl px-4 sm:px-6 py-5 space-y-6">
-        {/* Search & Filter Strip */}
         <section className="border border-[#112A1E]/20 bg-[#FFFEFA] p-4 space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="inline-flex border border-[#112A1E]/25 bg-[#F6F4EC] p-0.5">
@@ -297,7 +396,7 @@ export default function App() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="EAN-13 barkod veya ürün adı (eti, ülker, şampuan)..."
+                placeholder="EAN-13 barkod veya ürün/marka adı (eti, dost, züber, cerave)..."
                 className="flex-1 border border-[#112A1E]/25 bg-white px-3.5 py-2 text-xs sm:text-sm"
               />
               <button
@@ -363,9 +462,8 @@ export default function App() {
           {liveError && <p className="text-xs font-semibold text-[#92400E]">{liveError}</p>}
         </section>
 
-        {/* Main 2-Column Apothecary Facts Label + Market Directory */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* LEFT: Authentic Black-Ruled TGK Nutrition & Ingredient Facts Label */}
+          {/* LEFT: Apothecary Nutrition Facts Label */}
           <section className="lg:col-span-7 space-y-5">
             <article className="border-2 border-[#112A1E] bg-[#FFFEFA] p-5 sm:p-6">
               <div className="border-b-8 border-[#112A1E] pb-4 flex flex-wrap items-end justify-between gap-4">
@@ -397,7 +495,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* 100g Nutrition Table Strip */}
               {selectedProduct.domain === 'Gıda' &&
                 (selectedProduct.sugarPer100g !== undefined || selectedProduct.proteinPer100g !== undefined) && (
                   <div className="grid grid-cols-5 divide-x divide-[#112A1E]/20 border-b-2 border-[#112A1E] py-3 text-center">
@@ -427,7 +524,6 @@ export default function App() {
                 </div>
               )}
 
-              {/* Additives & Findings */}
               <div className="mt-4 border-b border-[#112A1E]/20 pb-4">
                 <h3 className="font-label-mono text-xs font-bold uppercase text-[#4B6155] mb-2">
                   Katkı &amp; İçerik Bulguları ({breakdown.findings.length})
@@ -496,7 +592,7 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => {
-                      const altFirst = alternatives[0]?.product ?? TURKISH_PRODUCTS.find((p) => p.barcode !== selectedProduct.barcode) ?? null;
+                      const altFirst = alternatives[0]?.product ?? allProducts.find((p) => p.barcode !== selectedProduct.barcode) ?? null;
                       setCompareProduct(altFirst);
                     }}
                     className="inline-flex items-center gap-1.5 border border-[#112A1E] bg-white px-3.5 py-2 text-xs font-bold cursor-pointer"
@@ -534,10 +630,10 @@ export default function App() {
             )}
           </section>
 
-          {/* RIGHT: Clean Market Shelf Directory */}
+          {/* RIGHT: Market & Brand Filtered Directory */}
           <aside className="lg:col-span-5 space-y-5">
-            <section className="border border-[#112A1E]/25 bg-[#FFFEFA] p-4">
-              <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-[#112A1E]/15 mb-2">
+            <section className="border border-[#112A1E]/25 bg-[#FFFEFA] p-4 space-y-3">
+              <div className="flex items-center justify-between gap-2 pb-2 border-b border-[#112A1E]/15">
                 <h3 className="font-label-mono text-xs font-bold uppercase text-[#4B6155]">
                   Market Raf İndeksi ({filteredCatalog.length})
                 </h3>
@@ -557,40 +653,93 @@ export default function App() {
                 </div>
               </div>
 
-              <ul className="divide-y divide-[#112A1E]/10 max-h-[410px] overflow-y-auto pr-1">
-                {filteredCatalog.map((prod) => {
-                  const res = analyzeProduct(prod, activeFilters);
-                  const active = selectedProduct.barcode === prod.barcode;
-                  return (
-                    <li key={prod.barcode} className="py-2 flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => pushHistory(prod)}
-                        className={`flex-1 flex items-center justify-between gap-2 text-left cursor-pointer min-w-0 ${
-                          active ? 'font-bold text-[#0E5A36]' : ''
-                        }`}
-                      >
-                        <div className="min-w-0">
-                          <div className="text-xs sm:text-sm truncate">{prod.name}</div>
-                          <div className="text-[11px] text-[#4B6155] truncate">{prod.category}</div>
-                        </div>
-                        <span className="font-label-mono text-xs font-bold px-2 py-0.5 text-white shrink-0" style={{ backgroundColor: res.color }}>
-                          {res.score}
-                        </span>
-                      </button>
-                      {prod.barcode !== selectedProduct.barcode && (
+              {/* Market Pills */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-[11px] font-bold text-[#4B6155]">
+                  <span className="flex items-center gap-1"><Store className="w-3.5 h-3.5" /> Market Filtresi</span>
+                  <button
+                    type="button"
+                    onClick={() => setAddModalOpen(true)}
+                    className="text-[#0E5A36] underline cursor-pointer"
+                  >
+                    + Market Ekle
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {['Tümü', ...allMarkets].map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => setSelectedMarket(m)}
+                      className={`px-2 py-0.5 text-[11px] border cursor-pointer ${
+                        selectedMarket === m
+                          ? 'bg-[#0E5A36] text-white border-[#0E5A36] font-bold'
+                          : 'bg-white text-[#4B6155] border-[#D8D3C5]'
+                      }`}
+                    >
+                      {m}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Brand Filter */}
+              <div>
+                <label className="block text-[11px] font-bold text-[#4B6155] mb-1">Marka Filtresi</label>
+                <select
+                  value={selectedBrand}
+                  onChange={(e) => setSelectedBrand(e.target.value)}
+                  className="w-full border border-[#112A1E]/25 bg-[#F6F4EC] px-2.5 py-1.5 text-xs font-semibold"
+                >
+                  <option value="Tümü">Tüm Markalar ({allBrands.length})</option>
+                  {allBrands.map((b) => (
+                    <option key={b} value={b}>{b}</option>
+                  ))}
+                </select>
+              </div>
+
+              <ul className="divide-y divide-[#112A1E]/10 max-h-[360px] overflow-y-auto pr-1">
+                {filteredCatalog.length === 0 ? (
+                  <li className="py-6 text-center text-xs text-[#4B6155]">
+                    Bu filtreye uygun ürün yok. "+ Market / Ürün Ekle" ile ekleyebilirsin.
+                  </li>
+                ) : (
+                  filteredCatalog.map((prod) => {
+                    const res = analyzeProduct(prod, activeFilters);
+                    const active = selectedProduct.barcode === prod.barcode;
+                    return (
+                      <li key={prod.barcode} className="py-2 flex items-center gap-2">
                         <button
                           type="button"
-                          onClick={() => setCompareProduct(prod)}
-                          className="p-1.5 border border-[#112A1E]/20 text-[#4B6155] hover:text-[#112A1E] cursor-pointer"
-                          title="Karşılaştır"
+                          onClick={() => pushHistory(prod)}
+                          className={`flex-1 flex items-center justify-between gap-2 text-left cursor-pointer min-w-0 ${
+                            active ? 'font-bold text-[#0E5A36]' : ''
+                          }`}
                         >
-                          <ArrowLeftRight className="w-3.5 h-3.5" />
+                          <div className="min-w-0">
+                            <div className="text-xs sm:text-sm truncate">{prod.name}</div>
+                            <div className="text-[11px] text-[#4B6155] truncate">
+                              {prod.brand} · {prod.marketHint}
+                            </div>
+                          </div>
+                          <span className="font-label-mono text-xs font-bold px-2 py-0.5 text-white shrink-0" style={{ backgroundColor: res.color }}>
+                            {res.score}
+                          </span>
                         </button>
-                      )}
-                    </li>
-                  );
-                })}
+                        {prod.barcode !== selectedProduct.barcode && (
+                          <button
+                            type="button"
+                            onClick={() => setCompareProduct(prod)}
+                            className="p-1.5 border border-[#112A1E]/20 text-[#4B6155] hover:text-[#112A1E] cursor-pointer"
+                            title="Karşılaştır"
+                          >
+                            <ArrowLeftRight className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </li>
+                    );
+                  })
+                )}
               </ul>
             </section>
 
@@ -635,14 +784,94 @@ export default function App() {
         }}
       />
 
+      {/* Add Market / Product Modal */}
+      {addModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4">
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto border-2 border-[#112A1E] bg-[#FFFEFA] p-5 space-y-5">
+            <div className="flex items-center justify-between border-b border-[#112A1E]/20 pb-3">
+              <h2 className="font-serif-editorial text-xl font-bold">Market veya Ürün Ekle</h2>
+              <button type="button" onClick={() => setAddModalOpen(false)} className="p-1 cursor-pointer"><X className="w-4 h-4" /></button>
+            </div>
+
+            <form onSubmit={handleAddCustomMarket} className="space-y-2 border-b border-[#112A1E]/15 pb-4">
+              <label className="block font-label-mono text-xs font-bold uppercase text-[#4B6155]">
+                1. Yeni Market Zinciri / Yerel Market Ekle
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newMarketName}
+                  onChange={(e) => setNewMarketName(e.target.value)}
+                  placeholder="Örn: Macrocenter, Onur Market, Bizim..."
+                  className="flex-1 border border-[#112A1E]/30 bg-white px-3 py-2 text-xs"
+                />
+                <button type="submit" className="bg-[#0E5A36] px-4 py-2 text-xs font-bold text-white cursor-pointer">
+                  Market Ekle
+                </button>
+              </div>
+            </form>
+
+            <form onSubmit={handleAddCustomProduct} className="space-y-3">
+              <div className="font-label-mono text-xs font-bold uppercase text-[#4B6155]">
+                2. Kendi Ürününü Raf İndeksine Ekle
+              </div>
+              <div className="grid sm:grid-cols-2 gap-2.5">
+                <input
+                  type="text"
+                  required
+                  value={newProdName}
+                  onChange={(e) => setNewProdName(e.target.value)}
+                  placeholder="Ürün adı *"
+                  className="border border-[#112A1E]/30 bg-white px-3 py-2 text-xs"
+                />
+                <input
+                  type="text"
+                  value={newProdBrand}
+                  onChange={(e) => setNewProdBrand(e.target.value)}
+                  placeholder="Marka (ör. Torku, Eti, Dost)"
+                  className="border border-[#112A1E]/30 bg-white px-3 py-2 text-xs"
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <select value={newProdMarket} onChange={(e) => setNewProdMarket(e.target.value)} className="border border-[#112A1E]/30 bg-[#F6F4EC] px-2.5 py-2 text-xs">
+                  {allMarkets.map((m) => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+                <select value={newProdDomain} onChange={(e) => setNewProdDomain(e.target.value as ProductDomain)} className="border border-[#112A1E]/30 bg-[#F6F4EC] px-2.5 py-2 text-xs">
+                  <option value="Gıda">Gıda</option>
+                  <option value="Kozmetik">Kozmetik</option>
+                </select>
+                <input
+                  type="text"
+                  value={newProdBarcode}
+                  onChange={(e) => setNewProdBarcode(e.target.value)}
+                  placeholder="Barkod (opsiyonel)"
+                  className="border border-[#112A1E]/30 bg-white px-2.5 py-2 text-xs font-label-mono"
+                />
+              </div>
+              <textarea
+                rows={3}
+                required
+                value={newProdIngredients}
+                onChange={(e) => setNewProdIngredients(e.target.value)}
+                placeholder="İçindekiler listesini buraya yapıştır *"
+                className="w-full border border-[#112A1E]/30 bg-white p-2.5 text-xs"
+              />
+              <button type="submit" className="w-full bg-[#112A1E] py-2.5 text-xs font-bold text-white cursor-pointer">
+                Ürünü Kaydet ve Puanla
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
       {compareProduct && compareBreakdown && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4">
           <div className="w-full max-w-2xl max-h-[88vh] overflow-y-auto border-2 border-[#112A1E] bg-[#FFFEFA] p-5 space-y-4">
             <div className="flex items-center justify-between border-b border-[#112A1E]/20 pb-3">
               <h2 className="font-serif-editorial text-xl font-bold">Yan Yana Etiket Karşılaştırması</h2>
-              <button type="button" onClick={() => setCompareProduct(null)} className="p-1 cursor-pointer">
-                <X className="w-4 h-4" />
-              </button>
+              <button type="button" onClick={() => setCompareProduct(null)} className="p-1 cursor-pointer"><X className="w-4 h-4" /></button>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
               {[
@@ -652,19 +881,10 @@ export default function App() {
                 <div key={p.barcode} className="border border-[#112A1E]/30 bg-[#F6F4EC] p-4 space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="font-bold text-sm">{p.name}</span>
-                    <span className="font-label-mono px-2 py-0.5 text-white text-xs font-bold" style={{ backgroundColor: b.color }}>
-                      {b.score}/100
-                    </span>
+                    <span className="font-label-mono px-2 py-0.5 text-white text-xs font-bold" style={{ backgroundColor: b.color }}>{b.score}/100</span>
                   </div>
                   <div className="text-xs text-[#4B6155]">Şeker: {p.sugarPer100g ?? '—'}g · Protein: {p.proteinPer100g ?? '—'}g</div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      pushHistory(p);
-                      setCompareProduct(null);
-                    }}
-                    className="w-full border border-[#112A1E] bg-white py-1.5 text-xs font-bold cursor-pointer"
-                  >
+                  <button type="button" onClick={() => { pushHistory(p); setCompareProduct(null); }} className="w-full border border-[#112A1E] bg-white py-1.5 text-xs font-bold cursor-pointer">
                     Bu Ürünü Seç
                   </button>
                 </div>
@@ -679,12 +899,10 @@ export default function App() {
           <div className="w-full max-w-md border-2 border-[#112A1E] bg-[#FFFEFA] p-5 space-y-4">
             <div className="flex items-center justify-between border-b border-[#112A1E]/20 pb-2">
               <h2 className="font-serif-editorial text-lg font-bold">KVKK &amp; Tarama Geçmişi</h2>
-              <button type="button" onClick={() => setKvkkOpen(false)} className="p-1 cursor-pointer">
-                <X className="w-4 h-4" />
-              </button>
+              <button type="button" onClick={() => setKvkkOpen(false)} className="p-1 cursor-pointer"><X className="w-4 h-4" /></button>
             </div>
             <button type="button" onClick={handleExportHistoryJson} className="w-full bg-[#112A1E] py-2.5 text-xs font-bold text-white cursor-pointer">
-              Tarama Geçmişini JSON İndir
+              Geçmiş &amp; Özel Ürünleri JSON İndir
             </button>
             {!confirmDelete ? (
               <button type="button" onClick={() => setConfirmDelete(true)} className="w-full border border-[#C83E37] bg-[#FCECEA] py-2 text-xs font-bold text-[#C83E37] cursor-pointer">
