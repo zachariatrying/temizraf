@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --bg-cotton: #f6f4ec;
-  --bg-label: #fffefa;
-  --ink-botanical: #112a1e;
-  --ink-muted: #4b6155;
-  --score-excellent: #0e5a36;
+  --bg-cotton: #edf6f0;
+  --bg-label: #ffffff;
+  --ink-botanical: #0d2e1e;
+  --ink-muted: #3b5e4c;
+  --score-excellent: #0f7a47;
   --font-serif: "Instrument Serif", Georgia, serif;
   --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;

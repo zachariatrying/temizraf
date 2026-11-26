@@ -164,18 +164,19 @@ export default function App() {
     setActiveFilters((prev) => (prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]));
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F6F4EC] text-[#112A1E]">
+    <div className="min-h-screen flex flex-col bg-[#EDF6F0] text-[#0D2E1E]">
+      <div className="h-1.5 w-full bg-gradient-to-r from-[#0B5E36] via-[#0F7A47] to-[#10B981]" />
       {/* Minimal Focused Header */}
-      <header className="mx-auto max-w-4xl w-full px-4 sm:px-6 pt-5 pb-4 border-b border-[#112A1E]/15 flex items-center justify-between gap-3">
+      <header className="mx-auto max-w-4xl w-full px-4 sm:px-6 pt-5 pb-4 border-b border-[#0F7A47]/20 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <img
             src={`${import.meta.env.BASE_URL}store-assets/temizraf_icon.png`}
             alt="TemizRaf"
-            className="w-9 h-9 rounded-md border border-[#112A1E]/20 object-cover"
+            className="w-9 h-9 rounded-md border border-[#0F7A47]/30 object-cover"
           />
           <div>
-            <h1 className="font-serif-editorial text-2xl sm:text-3xl leading-none">TemizRaf</h1>
-            <p className="font-label-mono text-[11px] text-[#4B6155] mt-1">
+            <h1 className="font-serif-editorial text-2xl sm:text-3xl leading-none text-[#0B4D2D]">TemizRaf</h1>
+            <p className="font-label-mono text-[11px] text-[#3B5E4C] mt-1">
               Barkod Okut · Temiz mi Değil mi? · Sebep &amp; Temiz Alternatif
             </p>
           </div>
@@ -184,20 +185,20 @@ export default function App() {
         <button
           type="button"
           onClick={() => setKvkkOpen(true)}
-          className="inline-flex items-center gap-1.5 border border-[#112A1E]/25 bg-[#FFFEFA] px-3 py-1.5 text-xs font-semibold hover:border-[#112A1E] cursor-pointer"
+          className="inline-flex items-center gap-1.5 border border-[#0F7A47]/30 bg-white px-3 py-1.5 text-xs font-semibold text-[#0D2E1E] hover:border-[#0F7A47] cursor-pointer"
         >
-          <ShieldCheck className="w-3.5 h-3.5 text-[#0E5A36]" />
+          <ShieldCheck className="w-3.5 h-3.5 text-[#0F7A47]" />
           KVKK
         </button>
       </header>
 
       <main className="flex-1 mx-auto w-full max-w-4xl px-4 sm:px-6 py-6 space-y-6">
         {/* Scanner-First Hero */}
-        <section className="border border-[#112A1E]/20 bg-[#FFFEFA] p-5 sm:p-6 space-y-4">
+        <section className="border border-[#0F7A47]/25 bg-white p-5 sm:p-6 space-y-4 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 className="font-serif-editorial text-2xl">Barkodla İçerik Analizi</h2>
-              <p className="text-xs sm:text-sm text-[#4B6155] mt-1">
+              <h2 className="font-serif-editorial text-2xl text-[#0B4D2D]">Barkodla İçerik Analizi</h2>
+              <p className="text-xs sm:text-sm text-[#3B5E4C] mt-1">
                 Ürünün barkodunu kamerayla okut veya numarasını yaz; neden temiz ya da riskli olduğunu ve daha temiz
                 alternatiflerini hemen gör.
               </p>
@@ -205,7 +206,7 @@ export default function App() {
             <button
               type="button"
               onClick={() => setScannerOpen(true)}
-              className="shrink-0 inline-flex items-center justify-center gap-2 bg-[#112A1E] px-5 py-3 text-sm font-bold text-[#F6F4EC] hover:bg-[#0E5A36] cursor-pointer"
+              className="shrink-0 inline-flex items-center justify-center gap-2 bg-[#0F7A47] px-5 py-3 text-sm font-bold text-white hover:bg-[#0B5E36] transition-colors cursor-pointer"
             >
               <Camera className="w-4 h-4" />
               Kamerayla Barkodu Okut
@@ -214,29 +215,29 @@ export default function App() {
 
           <form onSubmit={handleFormSubmit} className="flex flex-col sm:flex-row gap-2.5">
             <div className="relative flex-1">
-              <Search className="w-4 h-4 text-[#4B6155] absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-[#0F7A47] absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 inputMode="numeric"
                 value={barcodeInput}
                 onChange={(e) => setBarcodeInput(e.target.value)}
                 placeholder="Barkod numarasını yazın (örn. 8690526090214)"
-                className="w-full border border-[#112A1E]/25 bg-[#F6F4EC] pl-10 pr-4 py-2.5 text-sm font-label-mono focus:outline-none focus:border-[#112A1E]"
+                className="w-full border border-[#0F7A47]/25 bg-[#E6F3EB] pl-10 pr-4 py-2.5 text-sm font-label-mono focus:outline-none focus:border-[#0F7A47]"
               />
             </div>
             <button
               type="submit"
               disabled={loadingLive}
-              className="px-5 py-2.5 border border-[#112A1E] bg-[#FFFEFA] text-xs sm:text-sm font-bold hover:bg-[#112A1E] hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+              className="px-5 py-2.5 border border-[#0F7A47] bg-[#E6F3EB] text-[#0B4D2D] text-xs sm:text-sm font-bold hover:bg-[#0F7A47] hover:text-white transition-colors cursor-pointer disabled:opacity-50"
             >
               {loadingLive ? 'Sorgulanıyor...' : 'Barkodu Sorgula'}
             </button>
           </form>
 
           {/* Personal Sensitivity Toggles + Sample Barcodes */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-[#112A1E]/10">
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[#0F7A47]/15">
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-[11px] font-label-mono text-[#4B6155] mr-1">Hassasiyetin:</span>
+              <span className="text-[11px] font-label-mono text-[#3B5E4C] mr-1">Hassasiyetin:</span>
               {DIET_OPTIONS.map((opt) => {
                 const active = activeFilters.includes(opt.id);
                 return (
@@ -246,8 +247,8 @@ export default function App() {
                     onClick={() => toggleFilter(opt.id)}
                     className={`px-2.5 py-1 text-[11px] font-semibold border cursor-pointer ${
                       active
-                        ? 'border-[#112A1E] bg-[#112A1E] text-white'
-                        : 'border-[#112A1E]/20 bg-[#F6F4EC] text-[#4B6155]'
+                        ? 'border-[#0F7A47] bg-[#0F7A47] text-white'
+                        : 'border-[#0F7A47]/25 bg-[#EDF6F0] text-[#3B5E4C]'
                     }`}
                   >
                     {opt.label}
@@ -257,7 +258,7 @@ export default function App() {
             </div>
 
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-[11px] font-label-mono text-[#4B6155]">Örnek Dene:</span>
+              <span className="text-[11px] font-label-mono text-[#3B5E4C]">Örnek Dene:</span>
               {[
                 { label: 'Katkılı Ürün', prod: sampleRisky },
                 { label: 'Temiz Gıda', prod: sampleCleanFood },
@@ -267,7 +268,7 @@ export default function App() {
                   key={s.prod.barcode}
                   type="button"
                   onClick={() => void handleBarcodeLookup(s.prod.barcode)}
-                  className="px-2.5 py-1 text-[11px] font-semibold border border-[#112A1E]/20 bg-white hover:border-[#112A1E] cursor-pointer"
+                  className="px-2.5 py-1 text-[11px] font-semibold border border-[#0F7A47]/25 bg-[#F4FBF7] text-[#0B4D2D] hover:border-[#0F7A47] cursor-pointer"
                 >
                   {s.label}
                 </button>
@@ -419,10 +420,10 @@ export default function App() {
             </section>
 
             {/* 3. Clean Alternatives + AdSense Monetization Slot */}
-            <section className="border border-[#112A1E]/20 bg-[#FFFEFA] p-5 space-y-4">
+            <section className="border border-[#0F7A47]/25 bg-white p-5 space-y-4 shadow-sm">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[#0E5A36]" />
-                <h3 className="font-serif-editorial text-xl">Daha Temiz Alternatif Önerileri</h3>
+                <Sparkles className="w-4 h-4 text-[#0F7A47]" />
+                <h3 className="font-serif-editorial text-xl text-[#0B4D2D]">Daha Temiz Alternatif Önerileri</h3>
               </div>
 
               <div className="grid sm:grid-cols-3 gap-3">
@@ -431,16 +432,16 @@ export default function App() {
                     key={alt.barcode}
                     type="button"
                     onClick={() => void handleBarcodeLookup(alt.barcode)}
-                    className="text-left border border-[#112A1E]/20 bg-[#F6F4EC] p-3.5 hover:border-[#0E5A36] transition-colors space-y-2 cursor-pointer"
+                    className="text-left border border-[#0F7A47]/25 bg-[#EDF6F0] p-3.5 hover:border-[#0F7A47] hover:bg-[#E2F3E9] transition-colors space-y-2 cursor-pointer"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-label-mono text-[10px] px-2 py-0.5 bg-[#E7F5ED] text-[#1B7F4B] font-bold">
+                      <span className="font-label-mono text-[10px] px-2 py-0.5 bg-[#0F7A47] text-white font-bold">
                         TEMİZ · {altScore.score}/100
                       </span>
-                      <span className="font-label-mono text-[10px] text-[#4B6155]">{alt.brand}</span>
+                      <span className="font-label-mono text-[10px] text-[#3B5E4C]">{alt.brand}</span>
                     </div>
-                    <div className="text-xs font-bold leading-snug">{alt.name}</div>
-                    <div className="text-[11px] text-[#4B6155]">
+                    <div className="text-xs font-bold leading-snug text-[#0D2E1E]">{alt.name}</div>
+                    <div className="text-[11px] text-[#3B5E4C]">
                       {altScore.positives[0] || alt.marketHint}
                     </div>
                   </button>
