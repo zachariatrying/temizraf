@@ -97,7 +97,7 @@ export function analyzeProduct(
   let bgColor = '#E7F5ED';
 
   if (finalScore < 35) {
-    grade = 'Kaçın';
+    grade = 'Yoğun Katkı';
     color = '#C83E37';
     bgColor = '#FCECEA';
   } else if (finalScore < 55) {
@@ -344,7 +344,7 @@ export function downloadScoreCardPng(product: ProductRecord, breakdown: ScoreBre
   ctx.fillStyle = '#738278';
   ctx.textAlign = 'center';
   ctx.font = '500 24px sans-serif';
-  ctx.fillText('temizraf · Reklamsız, bağımsız Türkçe etiket analizi', 540, 1285);
+  ctx.fillText('temizraf · Bağımsız Türkçe etiket & içerik analizi', 540, 1285);
 
   const link = document.createElement('a');
   link.download = `temizraf-${product.barcode || 'analiz'}.png`;

@@ -32,7 +32,7 @@ export interface ProductRecord {
 
 export interface ScoreBreakdown {
   score: number;
-  grade: 'Mükemmel' | 'İyi' | 'Orta' | 'Kaçın';
+  grade: 'Mükemmel' | 'İyi' | 'Orta' | 'Yoğun Katkı';
   color: string;
   bgColor: string;
   findings: Array<{

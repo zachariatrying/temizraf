@@ -142,8 +142,8 @@ export default function App() {
     }
     if (breakdown.score >= 50) {
       return {
-        label: 'ŞÜPHELİ / ORTA RİSK',
-        summary: 'Bazı tartışmalı bileşenler veya yüksek şeker/tuz içeriği barındırıyor; daha temiz alternatiflere göz atabilirsin.',
+        label: 'ORTA DÜZEY İŞLENMİŞ İÇERİK',
+        summary: 'Bazı katkı bileşenleri veya yüksek şeker/tuz oranı barındırıyor; daha sade içerikli alternatifleri aşağıda inceleyebilirsiniz.',
         bg: '#FEF4E4',
         border: '#D97706',
         text: '#7C4106',
@@ -151,8 +151,8 @@ export default function App() {
       };
     }
     return {
-      label: 'TEMİZ DEĞİL — KAÇINILMASI ÖNERİLİR',
-      summary: 'Yüksek riskli katkı maddesi, yoğun şeker/palm yağı veya hassasiyet uyarısı tespit edildi.',
+      label: 'YOĞUN KATKI / YÜKSEK İŞLENMİŞ İÇERİK',
+      summary: 'Etiket beyanına göre birden fazla katkı maddesi veya yüksek şeker/doymuş yağ oranı içeriyor; daha sade içerikli alternatifleri aşağıda inceleyebilirsiniz.',
       bg: '#FCECEA',
       border: '#C83E37',
       text: '#7D201B',
@@ -477,6 +477,20 @@ export default function App() {
           </section>
         )}
       </main>
+
+      <footer className="mx-auto max-w-4xl w-full px-4 sm:px-6 pb-8 pt-4 border-t border-[#0F7A47]/20 text-[11px] text-[#3B5E4C] space-y-1.5">
+        <p>
+          İncelenen tüm ürünler piyasada yasal olarak satılan ürünlerdir; tespit edilen E-kodları Türk Gıda Kodeksi ve
+          EFSA mevzuatınca izin verilen bileşenlerdir. Puanlama besin ve katkı yoğunluğuna dayalı bilgilendirme
+          amaçlıdır; tıbbi tavsiye veya marka kötülemesi niteliği taşımaz.
+        </p>
+        <p className="flex flex-wrap items-center gap-3 font-semibold">
+          <span>Veri Atfı: Open Food Facts (ODbL)</span>
+          <a href="./privacy.html" className="underline text-[#0F7A47]">
+            Gizlilik, KVKK &amp; Kullanım Koşulları
+          </a>
+        </p>
+      </footer>
 
       <BarcodeScannerModal
         open={scannerOpen}

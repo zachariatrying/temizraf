@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>en</string>
+	<string>tr</string>
 	<key>CFBundleDisplayName</key>
         <string>TemizRaf</string>
 	<key>CFBundleExecutable</key>
@@ -45,5 +45,7 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Ürün barkodlarını kamerayla okutup içerik analizi yapabilmek için kamera erişimi gereklidir. Kamera görüntüsü sunucuya gönderilmez.</string>
 </dict>
 </plist>

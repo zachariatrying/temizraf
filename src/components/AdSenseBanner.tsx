@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Check, Copy, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 interface AdSenseBannerProps {
   slotId?: string;
@@ -16,7 +16,6 @@ export function AdSenseBanner({ slotId, categoryHint }: AdSenseBannerProps) {
   const clientId = import.meta.env.VITE_ADSENSE_CLIENT as string | undefined;
   const pushedRef = useRef(false);
   const [infoOpen, setInfoOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
   const isConfigured = Boolean(clientId && clientId.startsWith('ca-pub-'));
 
   useEffect(() => {
@@ -79,18 +78,17 @@ export function AdSenseBanner({ slotId, categoryHint }: AdSenseBannerProps) {
                   Aylık sabit vitrin veya tıklama bazlı model + otomatik Google AdSense (`VITE_ADSENSE_CLIENT`) desteği.
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  navigator.clipboard?.writeText('sponsor@temizraf.app');
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 1800);
-                }}
-                className="inline-flex items-center gap-1.5 border border-[#0F7A47] bg-[#E6F5EC] px-3 py-1.5 font-label-mono text-[11px] font-bold text-[#0F7A47] cursor-pointer"
+              <a
+                href={
+                  (import.meta.env.VITE_SPONSOR_URL as string | undefined) ||
+                  'https://github.com/zachariatrying/temizraf/issues/new?title=Sponsorlu+Vitrin+Basvurusu'
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 border border-[#0F7A47] bg-[#E6F5EC] px-3 py-1.5 font-label-mono text-[11px] font-bold text-[#0F7A47] hover:bg-[#0F7A47] hover:text-white transition-colors"
               >
-                {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                {copied ? 'E-posta Kopyalandı' : 'sponsor@temizraf.app'}
-              </button>
+                Sponsorlu Vitrin Başvuru Formu ↗
+              </a>
             </div>
           )}
         </div>
