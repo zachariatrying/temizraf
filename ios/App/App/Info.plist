@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
@@ -46,6 +46,8 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Ürün barkodlarını kamerayla okutup içerik analizi yapabilmek için kamera erişimi gereklidir. Kamera görüntüsü sunucuya gönderilmez.</string>
+	<string>ÃœrÃ¼n barkodlarÄ±nÄ± kamerayla okutup iÃ§erik analizi yapabilmek iÃ§in kamera eriÅŸimi gereklidir. Kamera gÃ¶rÃ¼ntÃ¼sÃ¼ sunucuya gÃ¶nderilmez.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>
