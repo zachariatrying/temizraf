@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { GuideWidget } from './components/GuideWidget';
 import {
   AlertTriangle,
   Camera,
@@ -66,7 +67,7 @@ export default function App() {
   useEffect(() => {
     try {
       localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 10)));
-    } catch {}
+    } catch { }
   }, [history]);
 
   const pushHistory = (prod: ProductRecord) => {
@@ -245,11 +246,10 @@ export default function App() {
                     key={opt.id}
                     type="button"
                     onClick={() => toggleFilter(opt.id)}
-                    className={`px-2.5 py-1 text-[11px] font-semibold border cursor-pointer ${
-                      active
-                        ? 'border-[#0F7A47] bg-[#0F7A47] text-white'
-                        : 'border-[#0F7A47]/25 bg-[#EDF6F0] text-[#3B5E4C]'
-                    }`}
+                    className={`px-2.5 py-1 text-[11px] font-semibold border cursor-pointer ${active
+                      ? 'border-[#0F7A47] bg-[#0F7A47] text-white'
+                      : 'border-[#0F7A47]/25 bg-[#EDF6F0] text-[#3B5E4C]'
+                      }`}
                   >
                     {opt.label}
                   </button>
@@ -374,11 +374,10 @@ export default function App() {
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-xs font-bold">{f.code} · {f.name}</span>
                           <span
-                            className={`text-[10px] font-label-mono px-1.5 py-0.5 font-bold ${
-                              f.risk === 'yuksek'
-                                ? 'bg-[#FCECEA] text-[#C83E37]'
-                                : 'bg-[#FEF4E4] text-[#D97706]'
-                            }`}
+                            className={`text-[10px] font-label-mono px-1.5 py-0.5 font-bold ${f.risk === 'yuksek'
+                              ? 'bg-[#FCECEA] text-[#C83E37]'
+                              : 'bg-[#FEF4E4] text-[#D97706]'
+                              }`}
                           >
                             {f.risk === 'yuksek' ? 'Yüksek Risk' : f.risk === 'orta' ? 'Orta Risk' : 'Düşük Risk'}
                           </span>
@@ -528,6 +527,7 @@ export default function App() {
           </div>
         </div>
       )}
+      <GuideWidget />
     </div>
   );
 }
