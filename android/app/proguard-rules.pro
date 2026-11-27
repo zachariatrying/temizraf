@@ -21,3 +21,5 @@
 #-renamesourcefileattribute SourceFile
 
 -keep class com.getcapacitor.** { *; }
+-keep class com.capacitorjs.barcodescanner.** { *; }
+-keep class com.outsystems.plugins.barcode.** { *; }
